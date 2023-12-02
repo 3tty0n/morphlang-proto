@@ -1,0 +1,46 @@
+use std::str::{FromStr};
+
+use crate::ast::{Stmt, Expr, Function, Op};
+
+grammar;
+
+pub Stmt: Box<Stmt> = {
+    "let" <id:Ident> "=" <body:Expr> ";" => Box::new(Stmt::Assign(id, body)),
+}
+
+pub Expr: Box<Expr> = {
+    <l:Expr> "+" <r:Term> => Box::new(Expr::BinOp(l, Op::Plus, r)),
+    <l:Expr> "-" <r:Term> => Box::new(Expr::BinOp(l, Op::Minus, r)),
+    <l:Expr> "/" <r:Term> => Box::new(Expr::BinOp(l, Op::Slash, r)),
+    <l:Expr> "*" <r:Term> => Box::new(Expr::BinOp(l, Op::Star, r)),
+    Term,
+}
+
+pub Term: Box<Expr> = {
+    Num => Box::new(Expr::Number(<>)),
+    FNum => Box::new(Expr::FNumber(<>)),
+    Ident => Box::new(Expr::Variable(<>)),
+    "(" <Expr> ")",
+};
+
+pub Function: Box<Function> = {
+    "function" <id:Ident> "(" <args:Arguments> ")" "=" <stmt:Expr> ";"
+        => Box::new(Function::T(id, args, stmt)),
+};
+
+Arguments: Vec<Box<Expr>> = {
+    <e:Expr> "," <args:Arguments> => {
+        let mut newexp = vec![e];
+        newexp.extend(args);
+        newexp
+    },
+    Expr => vec![<>],
+};
+
+Ident: String = {
+    r"[a-zA-Z][a-zA-Z0-9_]*" => String::from(<>)
+};
+
+Num: i32 = <s:r"[0-9]+"> => i32::from_str(s).unwrap();
+
+FNum: f64 = <s:r"[0-9]*[.][0-9]+"> => f64::from_str(s).unwrap();
