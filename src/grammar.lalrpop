@@ -18,6 +18,7 @@ pub Expr: Box<Expr> = {
     <l:Expr> "-" <r:Term> => Box::new(Expr::BinOp(l, Op::Minus, r)),
     <l:Expr> "/" <r:Term> => Box::new(Expr::BinOp(l, Op::Slash, r)),
     <l:Expr> "*" <r:Term> => Box::new(Expr::BinOp(l, Op::Star, r)),
+    <id:Ident> "(" <args:Arguments> ")" => Box::new(Expr::FunApp(id, args)),
     Term,
 };
 

@@ -15,18 +15,26 @@ fn test_number() {
 }
 
 #[test]
+fn test_expr() {
+    let parser = grammar::ExprParser::new();
+    let expr1 = parser.parse("f(1, 2, 3)");
+    assert!(expr1.is_ok());
+}
+
+#[test]
 fn test_stmt() {
     let parser = grammar::StmtParser::new();
-    let expr1 = parser.parse("let x = 1;").unwrap();
-    let expr2 = parser.parse("let x = 1 + 2;").unwrap();
-    assert_eq!("Assign(\"x\", Number(1))", format!("{:?}", expr1));
+    let stmt1 = parser.parse("let x = 1;").unwrap();
+    let stmt2 = parser.parse("let x = 1 + 2;").unwrap();
+    assert_eq!("Assign(\"x\", Number(1))", format!("{:?}", stmt1));
     // println!("{}", format!("{:?}", expr2));
-    assert_eq!("Assign(\"x\", BinOp(Number(1), Plus, Number(2)))", format!("{:?}", expr2));
+    assert_eq!("Assign(\"x\", BinOp(Number(1), Plus, Number(2)))", format!("{:?}", stmt2));
 }
 
 #[test]
 fn test_function() {
     assert!(grammar::FunctionParser::new().parse("function f(x) { return 1; }").is_ok());
+    assert!(grammar::FunctionParser::new().parse("function g(x, y) { return x * y; }").is_ok());
 }
 
 #[test]
@@ -43,7 +51,7 @@ function g(x, y) {
 "###;
     let prog1 = parser.parse(str1);
     assert!(prog1.is_ok());
-    println!("{}", format!("{:?}", prog1.unwrap()));
+    // println!("{}", format!("{:?}", prog1.unwrap()));
 }
 
 #[cfg(not(test))]

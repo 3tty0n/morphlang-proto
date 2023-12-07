@@ -20,6 +20,7 @@ pub enum Expr {
     FNumber(f64),
     Variable(String),
     BinOp(Box<Expr>, Op, Box<Expr>),
+    FunApp(String, Vec<Box<Expr>>),
 }
 
 #[derive(Debug)]
