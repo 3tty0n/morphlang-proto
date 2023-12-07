@@ -1,12 +1,17 @@
 use std::str::{FromStr};
 
-use crate::ast::{Stmt, Expr, Function, Op};
+use crate::ast::{Stmt, Expr, Function, Op, Program};
 
 grammar;
 
+pub Program: Program = {
+    Function*
+};
+
 pub Stmt: Box<Stmt> = {
     "let" <id:Ident> "=" <body:Expr> ";" => Box::new(Stmt::Assign(id, body)),
-}
+    "return" <expr:Expr> ";" => Box::new(Stmt::Return(expr)),
+};
 
 pub Expr: Box<Expr> = {
     <l:Expr> "+" <r:Term> => Box::new(Expr::BinOp(l, Op::Plus, r)),
@@ -14,7 +19,7 @@ pub Expr: Box<Expr> = {
     <l:Expr> "/" <r:Term> => Box::new(Expr::BinOp(l, Op::Slash, r)),
     <l:Expr> "*" <r:Term> => Box::new(Expr::BinOp(l, Op::Star, r)),
     Term,
-}
+};
 
 pub Term: Box<Expr> = {
     Num => Box::new(Expr::Number(<>)),
@@ -24,8 +29,8 @@ pub Term: Box<Expr> = {
 };
 
 pub Function: Box<Function> = {
-    "function" <id:Ident> "(" <args:Arguments> ")" "=" <stmt:Expr> ";"
-        => Box::new(Function::T(id, args, stmt)),
+    "function" <id:Ident> "(" <args:Arguments> ")" "{" <stmt:Stmt> "}"
+        => Box::new(Function::Fun(id, args, stmt)),
 };
 
 Arguments: Vec<Box<Expr>> = {

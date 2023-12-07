@@ -11,6 +11,7 @@ pub enum Op {
 #[derive(Debug)]
 pub enum Stmt {
     Assign(String, Box<Expr>),
+    Return(Box<Expr>),
 }
 
 #[derive(Debug)]
@@ -23,5 +24,7 @@ pub enum Expr {
 
 #[derive(Debug)]
 pub enum Function {
-    T(String, Vec<Box<Expr>>, Box<Expr>),
+    Fun(String, Vec<Box<Expr>>, Box<Stmt>),
 }
+
+pub type Program = Vec<Box<Function>>;
