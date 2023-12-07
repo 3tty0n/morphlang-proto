@@ -34,13 +34,25 @@ pub Function: Box<Function> = {
         => Box::new(Function::Fun(id, args, stmt)),
 };
 
-Arguments: Vec<Box<Expr>> = {
-    <e:Expr> "," <args:Arguments> => {
-        let mut newexp = vec![e];
-        newexp.extend(args);
-        newexp
-    },
-    Expr => vec![<>],
+// Arguments: Vec<Box<Expr>> = {
+//     <e:Expr> "," <args:Arguments> => {
+//         let mut newexp = vec![e];
+//         newexp.extend(args);
+//         newexp
+//     },
+//     Expr => vec![<>],
+// };
+
+Arguments = Comma<Expr>;
+
+Comma<T>: Vec<T> = {
+    <mut v:(<T> ",")*> <e:T?> => match e {
+        None => v,
+        Some(e) => {
+            v.push(e);
+            v
+        }
+    }
 };
 
 Ident: String = {
