@@ -34,14 +34,9 @@ pub Function: Box<Function> = {
         => Box::new(Function::Fun(id, args, stmt)),
 };
 
-// Arguments: Vec<Box<Expr>> = {
-//     <e:Expr> "," <args:Arguments> => {
-//         let mut newexp = vec![e];
-//         newexp.extend(args);
-//         newexp
-//     },
-//     Expr => vec![<>],
-// };
+pub FunApp: Box<Expr> = {
+    <id:Ident> "(" <args:Arguments> ")" => Box::new(Expr::FunApp(id, args)),
+}
 
 Arguments = Comma<Expr>;
 
