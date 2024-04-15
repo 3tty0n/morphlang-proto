@@ -2,6 +2,9 @@ use crate::ast::{Stmt, Expr};
 
 use lalrpop_util::lalrpop_mod;
 
+extern crate proc_macro;
+use proc_macro::TokenStream;
+
 lalrpop_mod!(pub grammar);
 
 pub mod ast;
@@ -54,7 +57,13 @@ function g(x, y) {
     // println!("{}", format!("{:?}", prog1.unwrap()));
 }
 
-#[cfg(not(test))]
+// #[proc_macro]
+// pub fn make_answer(_item: TokenStream) -> TokenStream {
+//     "pub fn answer() -> u32 { 42 }".parse().unwrap()
+// }
+
+// make_answer!();
+
 fn main() {
-    println!("Hello, world!");
+
 }
