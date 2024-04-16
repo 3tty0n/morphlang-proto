@@ -25,7 +25,7 @@ pub enum Expr {
 
 #[derive(Debug)]
 pub enum Function {
-    Fun(String, Vec<Box<Expr>>, Box<Stmt>),
+    Fun(String, Vec<Box<Expr>>, Vec<Box<Stmt>>),
 }
 
 pub type Program = Vec<Box<Function>>;

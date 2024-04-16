@@ -57,7 +57,8 @@ function f(x) {
 }
 
 function g(x, y) {
-  return x + y;
+  let z = f(1);
+  return z + y;
 }
 "###;
     let prog1 = parser.parse(str1);

@@ -30,13 +30,17 @@ pub Term: Box<Expr> = {
 };
 
 pub Function: Box<Function> = {
-    "function" <id:Ident> "(" <args:Arguments> ")" "{" <stmt:Stmt> "}"
-        => Box::new(Function::Fun(id, args, stmt)),
+    "function" <id:Ident> "(" <args:Arguments> ")" "{" <stmts:Stmts> "}"
+        => Box::new(Function::Fun(id, args, stmts)),
 };
 
 pub FunApp: Box<Expr> = {
     <id:Ident> "(" <args:Arguments> ")" => Box::new(Expr::FunApp(id, args)),
 }
+
+Stmts: Vec<Box<Stmt>> = {
+    Stmt*
+};
 
 Arguments = Comma<Expr>;
 
