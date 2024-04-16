@@ -1,12 +1,9 @@
-pub mod ast;
+mod ast;
 use ast::{Stmt, Expr};
 
 use lalrpop_util::lalrpop_mod;
+lalrpop_mod!(grammar);
 
-extern crate proc_macro;
-use proc_macro::TokenStream;
-
-lalrpop_mod!(pub grammar);
 
 #[test]
 fn test_number() {
@@ -35,8 +32,8 @@ fn test_stmt() {
 
 #[test]
 fn test_function() {
-    assert!(grammar::FunctionParser::new().parse("function f(x) { return 1; }").is_ok());
-    assert!(grammar::FunctionParser::new().parse("function g(x, y) { return x * y; }").is_ok());
+    assert!(grammar::FunctionParser::new().parse("function f(x) = return 1; ;;").is_ok());
+    assert!(grammar::FunctionParser::new().parse("function g(x, y) = return x * y; ;;").is_ok());
 }
 
 #[test]
@@ -52,19 +49,20 @@ fn test_funapp() {
 fn test_program() {
     let parser = grammar::ProgramParser::new();
     let str1 = r###"
-function f(x) {
+function f(x) =
   return x - 1;
-}
+;;
 
-function g(x, y) {
+function g(x, y) =
   let z = f(1);
   return z + y;
-}
+;;
 "###;
     let prog1 = parser.parse(str1);
     assert!(prog1.is_ok());
     // println!("{}", format!("{:?}", prog1.unwrap()));
 }
+
 
 // #[proc_macro]
 // pub fn make_answer(_item: TokenStream) -> TokenStream {
@@ -74,5 +72,5 @@ function g(x, y) {
 // make_answer!();
 
 fn main() {
-
+    println!("Hello, World!");
 }

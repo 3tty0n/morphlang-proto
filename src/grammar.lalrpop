@@ -1,11 +1,19 @@
 use std::str::{FromStr};
 
-use crate::ast::{Stmt, Expr, Function, Op, Program};
+use crate::ast::{Stmt, Expr, Function, Op, Program, Module};
 
 grammar;
 
-pub Program: Program = {
-    Function*
+pub Program: Box<Program> = {
+    <modules:Module*> <functions:Function*> => Box::new(Program::Program(modules, functions))
+};
+
+pub Module: Box<Module> = {
+    "open" <id:Ident> => Box::new(Module::Module(id))
+};
+
+Stmts: Vec<Box<Stmt>> = {
+    Stmt*
 };
 
 pub Stmt: Box<Stmt> = {
@@ -19,6 +27,7 @@ pub Expr: Box<Expr> = {
     <l:Expr> "/" <r:Term> => Box::new(Expr::BinOp(l, Op::Slash, r)),
     <l:Expr> "*" <r:Term> => Box::new(Expr::BinOp(l, Op::Star, r)),
     <id:Ident> "(" <args:Arguments> ")" => Box::new(Expr::FunApp(id, args)),
+    <modid:Ident> "." <funid:Ident> "("<args:Arguments> ")" => Box::new(Expr::ModFunApp(modid, funid, args)),
     Term,
 };
 
@@ -30,17 +39,13 @@ pub Term: Box<Expr> = {
 };
 
 pub Function: Box<Function> = {
-    "function" <id:Ident> "(" <args:Arguments> ")" "{" <stmts:Stmts> "}"
+    "function" <id:Ident> "(" <args:Arguments> ")" "=" <stmts:Stmts> ";;"
         => Box::new(Function::Fun(id, args, stmts)),
 };
 
 pub FunApp: Box<Expr> = {
     <id:Ident> "(" <args:Arguments> ")" => Box::new(Expr::FunApp(id, args)),
 }
-
-Stmts: Vec<Box<Stmt>> = {
-    Stmt*
-};
 
 Arguments = Comma<Expr>;
 

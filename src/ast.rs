@@ -21,6 +21,12 @@ pub enum Expr {
     Variable(String),
     BinOp(Box<Expr>, Op, Box<Expr>),
     FunApp(String, Vec<Box<Expr>>),
+    ModFunApp(String, String, Vec<Box<Expr>>),
+}
+
+#[derive(Debug)]
+pub enum Module {
+    Module(String)
 }
 
 #[derive(Debug)]
@@ -28,4 +34,7 @@ pub enum Function {
     Fun(String, Vec<Box<Expr>>, Vec<Box<Stmt>>),
 }
 
-pub type Program = Vec<Box<Function>>;
+#[derive(Debug)]
+pub enum Program {
+    Program(Vec<Box<Module>>, Vec<Box<Function>>)
+}
