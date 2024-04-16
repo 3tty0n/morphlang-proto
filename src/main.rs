@@ -1,4 +1,5 @@
-use crate::ast::{Stmt, Expr};
+pub mod ast;
+use ast::{Stmt, Expr};
 
 use lalrpop_util::lalrpop_mod;
 
@@ -6,8 +7,6 @@ extern crate proc_macro;
 use proc_macro::TokenStream;
 
 lalrpop_mod!(pub grammar);
-
-pub mod ast;
 
 #[test]
 fn test_number() {
@@ -38,6 +37,15 @@ fn test_stmt() {
 fn test_function() {
     assert!(grammar::FunctionParser::new().parse("function f(x) { return 1; }").is_ok());
     assert!(grammar::FunctionParser::new().parse("function g(x, y) { return x * y; }").is_ok());
+}
+
+#[test]
+fn test_funapp() {
+    let parser = grammar::ExprParser::new();
+    let expr1 = parser.parse("f(1, 2, 3)").unwrap();
+    assert_eq!("FunApp(\"f\", [Number(1), Number(2), Number(3)])", format!("{:?}", expr1));
+    let expr2 = parser.parse("f(g(1))").unwrap();
+    assert_eq!("FunApp(\"f\", [FunApp(\"g\", [Number(1)])])", format!("{:?}", expr2));
 }
 
 #[test]
