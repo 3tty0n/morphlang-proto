@@ -1,51 +1,56 @@
 use std::str::{FromStr};
 
-use crate::ast::{Stmt, Expr, Function, Op, Program, Module};
+use crate::ast::{Stmt, Expr, Function, BinOp, Program, Module};
 
 grammar;
 
 pub Program: Box<Program> = {
-    <modules:Module*> <functions:Function*> => Box::new(Program::Program(modules, functions))
+    <ms:Modules> <fs:Functions> => Box::new(Program::Program(ms, fs))
 };
 
 pub Module: Box<Module> = {
     "open" <id:Ident> => Box::new(Module::Module(id))
 };
 
-Stmts: Vec<Box<Stmt>> = {
-    Stmt*
-};
-
-pub Stmt: Box<Stmt> = {
-    "let" <id:Ident> "=" <body:Expr> ";" => Box::new(Stmt::Assign(id, body)),
-    "return" <expr:Expr> ";" => Box::new(Stmt::Return(expr)),
-};
+Modules: Vec<Box<Module>> = {
+    Module*
+}
 
 pub Expr: Box<Expr> = {
-    <l:Expr> "+" <r:Term> => Box::new(Expr::BinOp(l, Op::Plus, r)),
-    <l:Expr> "-" <r:Term> => Box::new(Expr::BinOp(l, Op::Minus, r)),
-    <l:Expr> "/" <r:Term> => Box::new(Expr::BinOp(l, Op::Slash, r)),
-    <l:Expr> "*" <r:Term> => Box::new(Expr::BinOp(l, Op::Star, r)),
-    <id:Ident> "(" <args:Arguments> ")" => Box::new(Expr::FunApp(id, args)),
-    <modid:Ident> "." <funid:Ident> "("<args:Arguments> ")" => Box::new(Expr::ModFunApp(modid, funid, args)),
-    Term,
-};
-
-pub Term: Box<Expr> = {
+    #[precedence(level="0")]
     Num => Box::new(Expr::Number(<>)),
     FNum => Box::new(Expr::FNumber(<>)),
     Ident => Box::new(Expr::Variable(<>)),
     "(" <Expr> ")",
+    #[precedence(level="1")]
+    #[assoc(side="left")]
+    <l:Expr> "+" <r:Expr> => Box::new(Expr::BinOp(l, BinOp::Plus, r)),
+    <l:Expr> "-" <r:Expr> => Box::new(Expr::BinOp(l, BinOp::Minus, r)),
+    <l:Expr> "/" <r:Expr> => Box::new(Expr::BinOp(l, BinOp::Slash, r)),
+    <l:Expr> "*" <r:Expr> => Box::new(Expr::BinOp(l, BinOp::Star, r)),
+    <l:Expr> "<" <r:Expr> => Box::new(Expr::BinOp(l, BinOp::LT, r)),
+    <l:Expr> ">" <r:Expr> => Box::new(Expr::BinOp(l, BinOp::GT, r)),
+    <l:Expr> "<=" <r:Expr> => Box::new(Expr::BinOp(l, BinOp::LE, r)),
+    <l:Expr> ">=" <r:Expr> => Box::new(Expr::BinOp(l, BinOp::GE, r)),
+    <id:Ident> "(" <args:Arguments> ")" => Box::new(Expr::FunApp(id, args)),
+    <modid:Ident> "." <funid:Ident> "("<args:Arguments> ")" => Box::new(Expr::ModFunApp(modid, funid, args)),
+    #[precedence(level="2")]
+    #[assoc(side="right")]
+    "let" <id:Ident> "=" <body:Expr> "in" <e:Expr> => Box::new(Expr::Let(id, body, e)),
 };
 
 pub Function: Box<Function> = {
-    "function" <id:Ident> "(" <args:Arguments> ")" "=" <stmts:Stmts> ";;"
-        => Box::new(Function::Fun(id, args, stmts)),
+    "function" <id:Ident> "(" <args:Arguments> ")" "=" <expr:Expr> ";;"
+        => Box::new(Function::Fun(id, args, expr)),
+    "router" <id:Ident> "(" <args:Arguments> ")" "=" <expr:Expr> ";;"
+        => Box::new(Function::Router(id, args, expr)),
+    "coordinator" <id:Ident> "(" <args:Arguments> ")" "=" <expr:Expr> ";;"
+        => Box::new(Function::Coordinator(id, args, expr)),
 };
 
-pub FunApp: Box<Expr> = {
-    <id:Ident> "(" <args:Arguments> ")" => Box::new(Expr::FunApp(id, args)),
-}
+Functions: Vec<Box<Function>> = {
+    Function*
+};
 
 Arguments = Comma<Expr>;
 

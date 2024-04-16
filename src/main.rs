@@ -4,13 +4,13 @@ use ast::{Stmt, Expr};
 use lalrpop_util::lalrpop_mod;
 lalrpop_mod!(grammar);
 
-
 #[test]
 fn test_number() {
-    assert!(grammar::TermParser::new().parse("12").is_ok());
-    assert!(grammar::TermParser::new().parse(".34").is_ok());
-    assert!(grammar::TermParser::new().parse("1.23").is_ok());
-    assert!(grammar::TermParser::new().parse("1234.5").is_ok());
+    let parser = grammar::ExprParser::new();
+    assert!(parser.parse("12").is_ok());
+    assert!(parser.parse(".34").is_ok());
+    assert!(parser.parse("1.23").is_ok());
+    assert!(parser.parse("1234.5").is_ok());
 }
 
 #[test]
@@ -18,22 +18,17 @@ fn test_expr() {
     let parser = grammar::ExprParser::new();
     let expr1 = parser.parse("f(1, 2, 3)");
     assert!(expr1.is_ok());
-}
-
-#[test]
-fn test_stmt() {
-    let parser = grammar::StmtParser::new();
-    let stmt1 = parser.parse("let x = 1;").unwrap();
-    let stmt2 = parser.parse("let x = 1 + 2;").unwrap();
-    assert_eq!("Assign(\"x\", Number(1))", format!("{:?}", stmt1));
-    // println!("{}", format!("{:?}", expr2));
-    assert_eq!("Assign(\"x\", BinOp(Number(1), Plus, Number(2)))", format!("{:?}", stmt2));
+    let expr2 = parser.parse("let x = 1 in let y = 2 in 3");
+    assert!(expr2.is_ok());
+    let expr3 = parser.parse("let x = 1 in let y = 2 in f(x, y)");
+    assert!(expr3.is_ok());
+    // println!("{}", format!("{:?}", expr2.unwrap()));
 }
 
 #[test]
 fn test_function() {
-    assert!(grammar::FunctionParser::new().parse("function f(x) = return 1; ;;").is_ok());
-    assert!(grammar::FunctionParser::new().parse("function g(x, y) = return x * y; ;;").is_ok());
+    assert!(grammar::FunctionParser::new().parse("function f(x) = let y = 1 in x + y;;").is_ok());
+    assert!(grammar::FunctionParser::new().parse("function g(x, y) = x / y;;").is_ok());
 }
 
 #[test]
@@ -46,23 +41,34 @@ fn test_funapp() {
 }
 
 #[test]
+fn test_module() {
+    let parser = grammar::ModuleParser::new();
+    let module1 = parser.parse("open Module1").unwrap();
+    assert_eq!("Module(\"Module1\")", format!("{:?}", module1));
+}
+
+#[test]
 fn test_program() {
     let parser = grammar::ProgramParser::new();
     let str1 = r###"
+open Module1
+open Module2
+
 function f(x) =
-  return x - 1;
+  let y = x + 1 in
+  y
 ;;
 
-function g(x, y) =
-  let z = f(1);
-  return z + y;
+function g(y) =
+  let z = 42 in
+  let w = z + y in
+  f(w)
 ;;
 "###;
     let prog1 = parser.parse(str1);
     assert!(prog1.is_ok());
-    // println!("{}", format!("{:?}", prog1.unwrap()));
+    println!("{}", format!("{:?}", prog1.unwrap()));
 }
-
 
 // #[proc_macro]
 // pub fn make_answer(_item: TokenStream) -> TokenStream {

@@ -1,17 +1,26 @@
 use std::fmt::{Debug, Formatter, Error};
 
 #[derive(Debug)]
-pub enum Op {
+pub enum Bool {
+    True,
+    False,
+}
+
+#[derive(Debug)]
+pub enum BinOp {
     Plus,
     Minus,
     Star,
     Slash,
+    LT,
+    GT,
+    LE,
+    GE,
 }
 
 #[derive(Debug)]
 pub enum Stmt {
-    Assign(String, Box<Expr>),
-    Return(Box<Expr>),
+    For(String, )
 }
 
 #[derive(Debug)]
@@ -19,7 +28,8 @@ pub enum Expr {
     Number(i32),
     FNumber(f64),
     Variable(String),
-    BinOp(Box<Expr>, Op, Box<Expr>),
+    BinOp(Box<Expr>, BinOp, Box<Expr>),
+    Let(String, Box<Expr>, Box<Expr>),
     FunApp(String, Vec<Box<Expr>>),
     ModFunApp(String, String, Vec<Box<Expr>>),
 }
@@ -31,7 +41,9 @@ pub enum Module {
 
 #[derive(Debug)]
 pub enum Function {
-    Fun(String, Vec<Box<Expr>>, Vec<Box<Stmt>>),
+    Fun(String, Vec<Box<Expr>>, Box<Expr>),
+    Router(String, Vec<Box<Expr>>, Box<Expr>),
+    Coordinator(String, Vec<Box<Expr>>, Box<Expr>),
 }
 
 #[derive(Debug)]
