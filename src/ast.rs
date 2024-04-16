@@ -20,17 +20,20 @@ pub enum BinOp {
 
 #[derive(Debug)]
 pub enum Stmt {
-    For(String, )
+    // for x = 0 to n do <expr> done;
+    For(String, Box<Expr>, Box<Expr>, Box<Expr>),
 }
 
 #[derive(Debug)]
 pub enum Expr {
+    Unit,
     Number(i32),
     FNumber(f64),
     Variable(String),
     BinOp(Box<Expr>, BinOp, Box<Expr>),
     IfElse(Box<Expr>, Box<Expr>, Box<Expr>),
     Let(String, Box<Expr>, Box<Expr>),
+    LetStmt(String, Box<Stmt>, Box<Expr>),
     FunApp(String, Vec<Box<Expr>>),
     ModFunApp(String, String, Vec<Box<Expr>>),
 }

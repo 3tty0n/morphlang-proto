@@ -16,8 +16,14 @@ Modules: Vec<Box<Module>> = {
     Module*
 }
 
+pub Stmt: Box<Stmt> = {
+    "for" <id:Ident> "=" <start:Expr> "to" <end:Expr> "do" <body:Expr> "done"
+        => Box::new(Stmt::For(id, start, end, body))
+}
+
 pub Expr: Box<Expr> = {
     #[precedence(level="0")]
+    "()" => Box::new(Expr::Unit),
     Num => Box::new(Expr::Number(<>)),
     FNum => Box::new(Expr::FNumber(<>)),
     Ident => Box::new(Expr::Variable(<>)),
@@ -38,6 +44,7 @@ pub Expr: Box<Expr> = {
     #[precedence(level="2")]
     #[assoc(side="right")]
     "let" <id:Ident> "=" <body:Expr> "in" <e:Expr> => Box::new(Expr::Let(id, body, e)),
+    <stmt:Stmt> ";" <e:Expr> => Box::new(Expr::LetStmt("_".to_string(), stmt, e))
 };
 
 pub Function: Box<Function> = {

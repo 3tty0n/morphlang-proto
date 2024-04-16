@@ -48,6 +48,14 @@ fn test_funapp() {
 }
 
 #[test]
+fn test_stmt() {
+    let parser = grammar::ExprParser::new();
+    let expr1 = parser.parse("let n = 1 in for i = 0 to n do i + 1 done; 10");
+    assert!(expr1.is_ok());
+    println!("{}", format!("{:?}", expr1.unwrap()));
+}
+
+#[test]
 fn test_module() {
     let parser = grammar::ModuleParser::new();
     let module1 = parser.parse("open Module1").unwrap();
