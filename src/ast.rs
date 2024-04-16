@@ -29,6 +29,7 @@ pub enum Expr {
     FNumber(f64),
     Variable(String),
     BinOp(Box<Expr>, BinOp, Box<Expr>),
+    IfElse(Box<Expr>, Box<Expr>, Box<Expr>),
     Let(String, Box<Expr>, Box<Expr>),
     FunApp(String, Vec<Box<Expr>>),
     ModFunApp(String, String, Vec<Box<Expr>>),

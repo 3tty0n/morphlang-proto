@@ -14,15 +14,22 @@ fn test_number() {
 }
 
 #[test]
-fn test_expr() {
+fn test_let() {
     let parser = grammar::ExprParser::new();
-    let expr1 = parser.parse("f(1, 2, 3)");
+    let expr1 = parser.parse("let x = 1 in let y = 2 in 3");
     assert!(expr1.is_ok());
-    let expr2 = parser.parse("let x = 1 in let y = 2 in 3");
+    let expr2 = parser.parse("let x = 1 in let y = 2 in f(x, y)");
     assert!(expr2.is_ok());
-    let expr3 = parser.parse("let x = 1 in let y = 2 in f(x, y)");
-    assert!(expr3.is_ok());
     // println!("{}", format!("{:?}", expr2.unwrap()));
+}
+
+#[test]
+fn test_if() {
+    let parser = grammar::ExprParser::new();
+    let expr1 = parser.parse("if x < 2 then 1 else 2");
+    assert!(expr1.is_ok());
+    let expr1 = parser.parse("if 3 > y then y else 32");
+    assert!(expr1.is_ok());
 }
 
 #[test]
