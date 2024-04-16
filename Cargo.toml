@@ -13,3 +13,5 @@ lalrpop = { version = "0.20.0" }
 
 [dependencies]
 lalrpop-util = { version = "0.20.0", features = ["lexer", "unicode"] }
+syn = "2.0"
+quote = "1.0"
