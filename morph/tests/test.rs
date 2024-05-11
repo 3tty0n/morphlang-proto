@@ -31,8 +31,8 @@ fn test_if() {
 
 #[test]
 fn test_function() {
-    assert!(grammar::FunctionParser::new().parse("function f(x) = let y = 1 in x + y;;").is_ok());
-    assert!(grammar::FunctionParser::new().parse("function g(x, y) = x / y;;").is_ok());
+    assert!(grammar::FunctionParser::new().parse("function f(x: i32): i32 = let y = 1 in x + y;;").is_ok());
+    assert!(grammar::FunctionParser::new().parse("function g(x: i32, y: i32): bool = x / y;;").is_ok());
 }
 
 #[test]
@@ -66,12 +66,12 @@ fn test_program() {
 open Module1
 open Module2
 
-function f(x) =
+function f(x: i32): i32 =
   let y = x + 1 in
   y
 ;;
 
-function g(y) =
+function g(y: i32, z: f64): i32 =
   let z = 42 in
   let w = z + y in
   f(w)
