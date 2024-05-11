@@ -16,6 +16,7 @@ pub enum BinOp {
     GT,
     LE,
     GE,
+    EQ,
 }
 
 #[derive(Debug)]
@@ -45,9 +46,14 @@ pub enum Module {
 
 #[derive(Debug)]
 pub enum Function {
-    Fun(String, Vec<Box<Expr>>, Box<Expr>),
-    Router(String, Vec<Box<Expr>>, Box<Expr>),
-    Coordinator(String, Vec<Box<Expr>>, Box<Expr>),
+    Fun(String, Vec<Argument>, Box<Expr>, String),
+    Router(String, Vec<Argument>, Box<Expr>, String),
+    Coordinator(String, Vec<Argument>, Box<Expr>, String),
+}
+
+#[derive(Debug)]
+pub enum Argument {
+    Argument(String, String)
 }
 
 #[derive(Debug)]
