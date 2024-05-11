@@ -1,6 +1,7 @@
 use std::str::{FromStr};
 
-use crate::ast::{Stmt, Expr, Function, BinOp, Program, Module};
+use crate::ast::{Stmt, Expr, Function, BinOp, Program, Module, Argument};
+use crate::token::MorphToken;
 
 grammar;
 
@@ -28,6 +29,8 @@ pub Expr: Box<Expr> = {
     FNum => Box::new(Expr::FNumber(<>)),
     Ident => Box::new(Expr::Variable(<>)),
     "(" <Expr> ")",
+    <id:Ident> "(" <args:RealArguments> ")" => Box::new(Expr::FunApp(id, args)),
+    <modid:Ident> "." <funid:Ident> "("<args:RealArguments> ")" => Box::new(Expr::ModFunApp(modid, funid, args)),
     #[precedence(level="1")]
     #[assoc(side="left")]
     <l:Expr> "+" <r:Expr> => Box::new(Expr::BinOp(l, BinOp::Plus, r)),
@@ -38,29 +41,33 @@ pub Expr: Box<Expr> = {
     <l:Expr> ">" <r:Expr> => Box::new(Expr::BinOp(l, BinOp::GT, r)),
     <l:Expr> "<=" <r:Expr> => Box::new(Expr::BinOp(l, BinOp::LE, r)),
     <l:Expr> ">=" <r:Expr> => Box::new(Expr::BinOp(l, BinOp::GE, r)),
-    "if" <cond:Expr> "then" <e1:Expr> "else" <e2:Expr> => Box::new(Expr::IfElse(cond, e1, e2)),
-    <id:Ident> "(" <args:Arguments> ")" => Box::new(Expr::FunApp(id, args)),
-    <modid:Ident> "." <funid:Ident> "("<args:Arguments> ")" => Box::new(Expr::ModFunApp(modid, funid, args)),
+    <l:Expr> "==" <r:Expr> => Box::new(Expr::BinOp(l, BinOp::EQ, r)),
     #[precedence(level="2")]
     #[assoc(side="right")]
+    "if" <cond:Expr> "then" <e1:Expr> "else" <e2:Expr> => Box::new(Expr::IfElse(cond, e1, e2)),
     "let" <id:Ident> "=" <body:Expr> "in" <e:Expr> => Box::new(Expr::Let(id, body, e)),
     <stmt:Stmt> ";" <e:Expr> => Box::new(Expr::LetStmt("_".to_string(), stmt, e))
 };
 
 pub Function: Box<Function> = {
-    "function" <id:Ident> "(" <args:Arguments> ")" "=" <expr:Expr> ";;"
-        => Box::new(Function::Fun(id, args, expr)),
-    "router" <id:Ident> "(" <args:Arguments> ")" "=" <expr:Expr> ";;"
-        => Box::new(Function::Router(id, args, expr)),
-    "coordinator" <id:Ident> "(" <args:Arguments> ")" "=" <expr:Expr> ";;"
-        => Box::new(Function::Coordinator(id, args, expr)),
+    "function" <id:Ident> "(" <args:DefArguments> ")" ":" <rettype:Ident> "=" <expr:Expr> ";;"
+        => Box::new(Function::Fun(id, args, expr, rettype)),
+    "router" <id:Ident> "(" <args:DefArguments> ")" ":" <rettype:Ident> "=" <expr:Expr> ";;"
+        => Box::new(Function::Router(id, args, expr, rettype)),
+    "coordinator" <id:Ident> "(" <args:DefArguments> ")" ":" <rettype:Ident> "=" <expr:Expr> ";;"
+        => Box::new(Function::Coordinator(id, args, expr, rettype)),
 };
 
 Functions: Vec<Box<Function>> = {
     Function*
 };
 
-Arguments = Comma<Expr>;
+RealArguments = Comma<Expr>;
+
+DefArguments = Comma<DefArgument>;
+
+DefArgument: Argument =
+    <var:Ident> ":" <id:Ident> => Argument::Argument(var, id);
 
 Comma<T>: Vec<T> = {
     <mut v:(<T> ",")*> <e:T?> => match e {
