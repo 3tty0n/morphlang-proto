@@ -1,0 +1,5 @@
+if x < 1 then
+    let x = 1 in
+    x
+else
+    1

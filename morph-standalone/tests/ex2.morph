@@ -1,0 +1,11 @@
+router r(e: Event) : unit =
+  match e with
+    Send (e) => 1
+  | Receive (e) => 2
+;;
+
+coordinator c(e: Event) : unit =
+  match e with
+    Send (e) => 1
+  | Receive (e) => 2
+;;

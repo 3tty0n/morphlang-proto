@@ -1,0 +1,106 @@
+use std::str::{FromStr};
+
+use crate::ast::{Stmt, Expr, Match, Pattern, Function, BinOp, Program, Module, Argument};
+
+grammar;
+
+pub Program: Box<Program> = {
+    <ms:Modules> <fs:Functions> => Box::new(Program::Program(ms, fs))
+};
+
+pub Module: Box<Module> = {
+    "open" <id:Ident> => Box::new(Module::Module(id))
+};
+
+Modules: Vec<Box<Module>> = {
+    Module*
+};
+
+pub Stmt: Box<Stmt> = {
+    "for" <id:Ident> "=" <start:Expr> "to" <end:Expr> "do" <body:Expr> "done"
+        => Box::new(Stmt::For(id, start, end, body)),
+    "if" <cond:Expr> "then" <s1:Stmt> "else" <s2:Stmt> => Box::new(Stmt::IfElse(cond, s1, s2)),
+    "let" <id:Ident> "=" <body:Expr> "in" <s:Stmt> => Box::new(Stmt::Let(id, body, s)),
+    <e:Expr> => Box::new(Stmt::Return(e)),
+};
+
+pub Expr: Box<Expr> = {
+    #[precedence(level="0")]
+    "()" => Box::new(Expr::Unit),
+    Num => Box::new(Expr::Number(<>)),
+    FNum => Box::new(Expr::FNumber(<>)),
+    Ident => Box::new(Expr::Variable(<>)),
+    "(" <Expr> ")",
+    <id:Ident> "(" <args:RealArguments> ")" => Box::new(Expr::FunApp(id, args)),
+    <modid:Ident> "." <funid:Ident> "("<args:RealArguments> ")" => Box::new(Expr::ModFunApp(modid, funid, args)),
+    #[precedence(level="1")]
+    #[assoc(side="left")]
+    <l:Expr> "+" <r:Expr> => Box::new(Expr::BinOp(l, BinOp::Plus, r)),
+    <l:Expr> "-" <r:Expr> => Box::new(Expr::BinOp(l, BinOp::Minus, r)),
+    <l:Expr> "/" <r:Expr> => Box::new(Expr::BinOp(l, BinOp::Slash, r)),
+    <l:Expr> "*" <r:Expr> => Box::new(Expr::BinOp(l, BinOp::Star, r)),
+    <l:Expr> "<" <r:Expr> => Box::new(Expr::BinOp(l, BinOp::LT, r)),
+    <l:Expr> ">" <r:Expr> => Box::new(Expr::BinOp(l, BinOp::GT, r)),
+    <l:Expr> "<=" <r:Expr> => Box::new(Expr::BinOp(l, BinOp::LE, r)),
+    <l:Expr> ">=" <r:Expr> => Box::new(Expr::BinOp(l, BinOp::GE, r)),
+    <l:Expr> "==" <r:Expr> => Box::new(Expr::BinOp(l, BinOp::EQ, r)),
+};
+
+pub Match: Box<Match> = {
+    "match" <e:Expr> "with" <p:Pattern> => Box::new(Match::Match(e, p)),
+};
+
+Pat: Box<Pattern> = {
+    "Send" "(" <e:Expr> ")" "=" ">" <s:Stmt> => Box::new(Pattern::Send(e, s)),
+    "Receive" "(" <e:Expr> ")" "=" ">" <s:Stmt> => Box::new(Pattern::Receive(e, s)),
+};
+
+Pattern: Vec<Box<Pattern>> = CenterBar<Pat>;
+
+CenterBar<T>: Vec<T> = {
+    <mut v:(<T> "|")*> <e:T?> => match e {
+        None => v,
+        Some(e) => {
+            v.push(e);
+            v
+        }
+    }
+};
+
+pub Function: Box<Function> = {
+    "function" <id:Ident> "(" <args:DefArguments> ")" ":" <rettype:Ident> "=" <expr:Expr> ";;"
+        => Box::new(Function::Fun(id, args, expr, rettype)),
+    "router" <id:Ident> "(" <args:DefArguments> ")" ":" <rettype:Ident> "=" <m:Match> ";;"
+        => Box::new(Function::Router(id, args, m, rettype)),
+    "coordinator" <id:Ident> "(" <args:DefArguments> ")" ":" <rettype:Ident> "=" <m:Match> ";;"
+        => Box::new(Function::Coordinator(id, args, m, rettype)),
+};
+
+Functions: Vec<Box<Function>> = {
+    Function*
+};
+
+RealArguments = Comma<Expr>;
+
+DefArguments = Comma<DefArgument>;
+
+DefArgument: Argument =
+    <var:Ident> ":" <id:Ident> => Argument::Argument(var, id);
+
+Comma<T>: Vec<T> = {
+    <mut v:(<T> ",")*> <e:T?> => match e {
+        None => v,
+        Some(e) => {
+            v.push(e);
+            v
+        }
+    }
+};
+
+Ident: String = {
+    r"[a-zA-Z][a-zA-Z0-9_]*" => String::from(<>)
+};
+
+Num: i32 = <s:r"[0-9]+"> => i32::from_str(s).unwrap();
+
+FNum: f64 = <s:r"[0-9]*[.][0-9]+"> => f64::from_str(s).unwrap();
