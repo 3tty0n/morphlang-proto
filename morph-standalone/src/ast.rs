@@ -23,7 +23,9 @@ pub enum BinOp {
 pub enum Stmt {
     // for x = 0 to n do <expr> done;
     For(String, Box<Expr>, Box<Expr>, Box<Expr>),
+    // if cond then e1 else e2
     IfElse(Box<Expr>, Box<Stmt>, Box<Stmt>),
+    // let x = 1; cont
     Let(String, Box<Expr>, Box<Stmt>),
     Return(Box<Expr>),
 }
@@ -35,7 +37,6 @@ pub enum Expr {
     FNumber(f64),
     Variable(String),
     BinOp(Box<Expr>, BinOp, Box<Expr>),
-    IfElse(Box<Expr>, Box<Expr>, Box<Expr>),
     FunApp(String, Vec<Box<Expr>>),
     ModFunApp(String, String, Vec<Box<Expr>>),
 }

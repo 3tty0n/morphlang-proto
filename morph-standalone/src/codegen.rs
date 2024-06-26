@@ -21,16 +21,10 @@ pub fn gen_expr(expr: Box<Expr>) -> String {
                 BinOp::GE => format!("{lhs} >= {rhs}"),
             }
         },
-        Expr::IfElse(cond_exp, then_exp, else_exp) => {
-            let cond_exp = gen_expr(cond_exp);
-            let then_exp = gen_expr(then_exp);
-            let else_exp = gen_expr(else_exp);
-            format!(r#"
-if ({cond_exp}) {{
-  {then_exp};
-}} else {{
-  {else_exp};
-}}
+        Expr::ModFunApp(modid, funid, args) => {
+            let module = alternate_modid(modid);
+            let function = alternate_funid(funid);
+            format!(r#"{module}.{function}(..);
 "#)
         },
         _ => todo!(),
@@ -38,10 +32,33 @@ if ({cond_exp}) {{
 
 }
 
+fn alternate_modid(modid: String) -> String {
+    // TODO: tell using module(s) to compiler
+    if modid == "Display" {
+        "myTFT"
+    } else {
+        panic!("Only Display is supported.")
+    }.to_string()
+}
+
+fn alternate_funid(funid: String) -> String {
+    if funid == "rotate" {
+        "setRotation"
+    } else if funid == "fill_screen" {
+        "filLScreen"
+    } else {
+        panic!("Only rotate and fill_screen is supported")
+    }.to_string()
+}
+
 pub fn gen_stmt(stmt: Box<Stmt>) -> String {
     match *stmt {
         Stmt::Return(e) => {
-            format!("return {};\n", gen_expr(e))
+            match *e {
+                Expr::FunApp(..) => format!("{}", gen_expr(e)),
+                Expr::ModFunApp(..) => format!("{}", gen_expr(e)),
+                _ => format!("return {};", gen_expr(e))
+            }
         },
         Stmt::Let(var, body, cont) => {
             let body_exp = gen_expr(body);
@@ -53,8 +70,7 @@ pub fn gen_stmt(stmt: Box<Stmt>) -> String {
             let cond_exp = gen_expr(cond_exp);
             let then_exp = gen_stmt(then_exp);
             let else_exp = gen_stmt(else_exp);
-            format!(r#"
-if ({cond_exp}) {{
+            format!(r#"if ({cond_exp}) {{
   {then_exp}
 }} else {{
   {else_exp}
@@ -85,8 +101,7 @@ pub fn gen_function(function: Box<Function>) -> String {
                     let receive = patterns.pop().unwrap();
                     let send_str = gen_pattern(send);
                     let receive_str = gen_pattern(receive);
-                    format!(r#"
-#if !COMM_ROOT_NODE
+                    format!(r#"#if !COMM_ROOT_NODE
     // send action
     {send_str}
 

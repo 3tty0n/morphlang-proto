@@ -32,7 +32,7 @@ pub Expr: Box<Expr> = {
     Ident => Box::new(Expr::Variable(<>)),
     "(" <Expr> ")",
     <id:Ident> "(" <args:RealArguments> ")" => Box::new(Expr::FunApp(id, args)),
-    <modid:Ident> "." <funid:Ident> "("<args:RealArguments> ")" => Box::new(Expr::ModFunApp(modid, funid, args)),
+    <modid:Ident> "." <funid:Ident> "(" <args:RealArguments> ")" => Box::new(Expr::ModFunApp(modid, funid, args)),
     #[precedence(level="1")]
     #[assoc(side="left")]
     <l:Expr> "+" <r:Expr> => Box::new(Expr::BinOp(l, BinOp::Plus, r)),

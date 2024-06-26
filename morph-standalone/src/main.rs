@@ -16,8 +16,11 @@ fn main() {
 
         let parser = grammar::ProgramParser::new();
         let program : Vec<String> = codegen::gen_program(parser.parse(&content).unwrap());
+        let mut result = String::new();
         for p in program {
-            println!("{}", p);
+            result.push_str(&p);
         }
+        println!(r#"while (true) {{
+{result}}}"#)
     }
 }
